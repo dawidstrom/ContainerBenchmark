@@ -7,6 +7,8 @@
 #include <random>
 #include <math.h>
 #include <functional>
+#include <chrono>
+#include <thread>
 
 
 // Benchmark time to execute the given function.
@@ -26,13 +28,40 @@ void benchmarkFunction(std::function<void(Args ...)> customFunction)
 inline size_t getSortedPosition(std::vector<int>& c, int random)
 {
 	// Check edge cases.
-	if (random < c[0])
+	if (random <= c[0])
 	{
+		return 0;
 	}
-	else if (random > c[c.size()-1]) {
+	else if (random >= c[c.size()-1]) {
+		return c.size();
 	}
-	throw "Not implemented yet.";
-	return 0;
+	else
+	{
+		size_t left = 0;
+		size_t right = c.size() - 1;
+		size_t midpoint;
+
+		// While the left and right bounds aren't tight.
+		while (left != right-1)
+		{
+			midpoint = left + (right - left) / 2;
+			if (random < c[midpoint])
+			{
+				// We can discard all elements right of the midpoint for being too large.
+				right = midpoint;
+			}
+			else if (random >= c[midpoint])
+			{
+				// We can discard all elements left of the midpoint for being too small.
+				left = midpoint;
+			}
+			else
+			{
+				throw "This shouldn't be possible! Vector isn't sorted or is malformed!";
+			}
+		}
+		return right;
+	}
 }
 
 // Insert new value into sorted vector.
@@ -42,18 +71,24 @@ inline void shiftInsert(std::vector<int>& c, int random)
 
 	// Insert new value at index and shift old values to keep sorted order.
 
-	// TODO: Verify if this really is correct. Think its a mistake.
-	int tmp = c[shiftIndex];
-	int tmp2;
-	c[shiftIndex] = random;
-
-	for (size_t i = shiftIndex; i < c.size()-1; i++)
+	if (shiftIndex == c.size())
 	{
-		tmp2 = c[i+1];
-		c[i+1] = tmp;
-		tmp = tmp2;
+		c.push_back(random);
 	}
-	c.push_back(tmp);
+	else
+	{
+		int tmp = c[shiftIndex];
+		int tmp2;
+		c[shiftIndex] = random;
+
+		for (size_t i = shiftIndex; i < c.size()-1; i++)
+		{
+			tmp2 = c[i+1];
+			c[i+1] = tmp;
+			tmp = tmp2;
+		}
+		c.push_back(tmp);
+	}
 }
 
 // Benchmark the time it takes to insert 'size' number of values 
