@@ -10,10 +10,12 @@
 #include <chrono>
 #include <thread>
 
+#define DEBUG false
+#define LOG(a) if (DEBUG) { a; }
 
 // Benchmark time to execute the given function.
 template<typename ... Args>
-void benchmarkFunction(std::function<void(Args ...)> customFunction) {
+double benchmarkFunction(std::function<void(Args ...)> customFunction) {
 	auto start = std::chrono::high_resolution_clock::now();
 
 	customFunction(Args ...);
@@ -21,7 +23,7 @@ void benchmarkFunction(std::function<void(Args ...)> customFunction) {
 	auto end = std::chrono::high_resolution_clock::now();
 	std::chrono::duration<double> elapsed = end - start;
 
-	std::cout << elapsed.count() << std::endl;
+	return elapsed.count();
 }
 
 inline size_t getSortedPosition(std::vector<int>& c, int random) {
@@ -69,7 +71,7 @@ inline void shiftInsert(std::vector<int>& c, int random) {
 
 // Benchmark the time it takes to insert 'size' number of values 
 // while preserving the sorted order of the vector at all times.
-void benchmarkVector(std::vector<int>& c, const size_t size) {
+double benchmarkVector(std::vector<int>& c, const size_t size) {
 	std::vector<int> random_feed;
 
 	for (size_t i = 0; i < size; i++) {
@@ -82,12 +84,12 @@ void benchmarkVector(std::vector<int>& c, const size_t size) {
 		}
 	};
 
-	benchmarkFunction(myfunc);
+	return benchmarkFunction(myfunc);
 }
 
 // Benchmark the time it takes to insert 'size' number of values 
 // while preserving the sorted order of the list at all times.
-void benchmarkList(std::list<int>& c, const size_t size) {
+double benchmarkList(std::list<int>& c, const size_t size) {
 	std::vector<int> random_feed(size);
 
 	for (size_t i = 0; i < size; i++) {
@@ -108,26 +110,46 @@ void benchmarkList(std::list<int>& c, const size_t size) {
 		}
 	};
 
-	benchmarkFunction(myfunc);
+	return benchmarkFunction(myfunc);
 }
 
+// Check that elements in collection are in ascending sorted order.
 template<typename T>
 bool isSorted(T start, T end) {
-	int lowest = *start;
-	T i = start;
+	int prev = *start;
 
-	for (; i != end; i++) {
-		if (*i < lowest) {
+	for (T i = start; i != end; i++) {
+		if (*i < prev) { // Element i should come before previous element, collection isnt sorted!
 			return false;
 		} else {
-			lowest = *i;
+			prev = *i;
 		}
 	}
 	return true;
 }
 
+struct ARGS {
+	size_t max, min, rate, rate_increase;
+};
+
+/*ARGS parseArgs(int argc, char** argv) {
+	ARGS args;
+	if (argc != 5) { throw "Wrong number of arguments!\nUsage: max min rate rate_increase"; }
+
+	args.max = argv[1];
+	args.min = argv[2];
+	args.rate = argv[3];
+	args.rate_increase = argv[4];
+
+	return args;
+}*/
+
+
 int main(int argc, char** argv) {
-	const int size = 2 << 16;
+
+	//ARGS args = parseArgs(argc, argv);
+
+	int size = 2 << 14;
 	std::cout << "Size: " << size << std::endl;
 
 	std::list<int> a;
@@ -142,27 +164,30 @@ int main(int argc, char** argv) {
 
 	// Impose a sorted order.
 	a.sort();
-	std::cout << "List sorted..." << std::flush;
+	LOG(std::cout << "List sorted..." << std::flush);
 	std::sort(b.begin(), b.end());
-	std::cout << "Vector sorted..." << std::flush;
-	std::cout << "starting Benchmark..." << std::endl;
+	LOG(std::cout << "Vector sorted..." << std::flush);
+	LOG(std::cout << "starting Benchmark..." << std::endl);
 
 	
-	std::cout << "List benchmark... ";
-	benchmarkList(a, 10000);
-	std::cout << "Vector benchmark... ";
-	benchmarkVector(b, 10000);
+	std::cout << "List benchmark: ";
+	double elapsed = benchmarkList(a, 1000);
+	std::cout << elapsed << std::endl;
+
+	std::cout << "Vector benchmark: ";
+	benchmarkVector(b, 1000);
+	std::cout << elapsed << std::endl;
 
 	
 	if (isSorted<std::list<int>::iterator>(a.begin(), a.end())) {
-		std::cout << "Vector is sorted!" << std::endl;
+		LOG(std::cout << "Vector is sorted!" << std::endl);
 	} else {
-		std::cout << "Vector is NOT sorted!" << std::endl;
+		LOG(std::cout << "Vector is NOT sorted!" << std::endl);
 	}
 	if (isSorted<std::vector<int>::iterator>(b.begin(), b.end())) {
-		std::cout << "Vector is sorted!" << std::endl;
+		LOG(std::cout << "Vector is sorted!" << std::endl);
 	} else {
-		std::cout << "Vector is NOT sorted!" << std::endl;
+		LOG(std::cout << "Vector is NOT sorted!" << std::endl);
 	}
 
 	return 0;
