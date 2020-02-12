@@ -131,77 +131,74 @@ bool isSorted(T start, T end) {
 
 struct ARGS {
 	size_t max, min;
-	double rate_min, rate_max, rate_increase;
+	double rate;
 };
 
 std::optional<ARGS> parseArgs(size_t argc, char** argv) {
 
 	ARGS args;
-	if (argc != 6) {
-		std::cout << "Not enough parameters!\nRequired parameters: min max rate_min rate_max rate_increase" << std::endl;
+	if (argc != 4) {
+		std::cout << "Not enough parameters!\nRequired parameters: min max rate\nWhere min and max refer to 2^min and 2^max." << std::endl;
 		return std::nullopt;
 	}
 
 	args.min = std::atoi(argv[1]);
 	args.max = std::atoi(argv[2]);
-	args.rate_min = std::atof(argv[3]);
-	args.rate_max = std::atof(argv[4]);
-	args.rate_increase = std::atof(argv[5]);
+	args.rate = std::atof(argv[3]);
 
 	return std::optional<ARGS>(args);
 }
 
 int main(const size_t argc, char** argv) {
-	
 	std::optional<ARGS> args = parseArgs(argc, argv);
 
 	if (!args) {
 		return 1;
 	}
 
-	for (size_t i = (*args).min; i < (*args).max; i++) {
+	for (size_t i = args->min; i < args->max; i++) {
 		size_t size = 2 << i;
 
-		for (double rate = (*args).rate_min; rate < (*args).rate_max; rate+=(*args).rate_increase) {
-			std::cout << "Starting size: " << size << ", inserting: " << size_t(size*rate) << " new elements. " << std::endl;
-			std::list<int> a;
-			std::vector<int> b;
+		//std::cout << "Starting size: " << size << ", inserting: " << size_t(size * args->rate) << " new elements. " << std::endl;
+		std::list<int> a;
+		std::vector<int> b;
 
-			// Populate the collections with random numbers.
-			for (size_t j = 0; j < size; j++) {
-				int tmp = rand();
-				a.push_back(tmp);
-				b.push_back(tmp);
-			}
-
-			// Impose a sorted order.
-			a.sort();
-			LOG(std::cout << "List sorted..." << std::flush);
-			std::sort(b.begin(), b.end());
-			LOG(std::cout << "Vector sorted..." << std::flush);
-			LOG(std::cout << "starting Benchmark..." << std::endl);
-
-			
-			std::cout << "List: ";
-			double elapsed = benchmarkList(a, rate*size);
-			std::cout << elapsed << " sec." << std::endl;
-
-			std::cout << "Vector: ";
-			benchmarkVector(b, rate*size);
-			std::cout << elapsed << " sec." << std::endl;
-
-			
-			if (isSorted<std::list<int>::iterator>(a.begin(), a.end())) {
-				LOG(std::cout << "Vector is sorted!" << std::endl);
-			} else {
-				LOG(std::cout << "Vector is NOT sorted!" << std::endl);
-			}
-			if (isSorted<std::vector<int>::iterator>(b.begin(), b.end())) {
-				LOG(std::cout << "Vector is sorted!" << std::endl);
-			} else {
-				LOG(std::cout << "Vector is NOT sorted!" << std::endl);
-			}
+		// Populate the collections with random numbers.
+		for (size_t j = 0; j < size; j++) {
+			int tmp = rand();
+			a.push_back(tmp);
+			b.push_back(tmp);
 		}
+
+		// Impose a sorted order.
+		a.sort();
+		LOG(std::cout << "List sorted..." << std::flush);
+		std::sort(b.begin(), b.end());
+		LOG(std::cout << "Vector sorted..." << std::flush);
+		LOG(std::cout << "starting Benchmark..." << std::endl);
+
+		
+		//std::cout << "List: ";
+		double elapsed = benchmarkList(a, args->rate * size);
+		std::cout << elapsed << std::endl;
+
+		//std::cout << "Vector: ";
+		elapsed = benchmarkVector(b, args->rate * size);
+		std::cout << elapsed << std::endl;
+
+		
+		if (isSorted<std::list<int>::iterator>(a.begin(), a.end())) {
+			LOG(std::cout << "Vector is sorted!" << std::endl);
+		} else {
+			LOG(std::cout << "Vector is NOT sorted!" << std::endl);
+		}
+		if (isSorted<std::vector<int>::iterator>(b.begin(), b.end())) {
+			LOG(std::cout << "Vector is sorted!" << std::endl);
+		} else {
+			LOG(std::cout << "Vector is NOT sorted!" << std::endl);
+		}
+
+		//std::cout << std::endl;
 	}
 
 	return 0;
