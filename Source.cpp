@@ -70,6 +70,49 @@ inline void shiftInsert(std::vector<int>& c, int random) {
 	}
 }
 
+
+// Insert new value into sorted vector.
+inline void shiftInsertCopy(std::vector<int>& c, int random) {
+	size_t shiftIndex = getSortedPosition(c, random);
+
+	// Insert new value at index and shift old values to keep sorted order.
+
+	if (shiftIndex == c.size()) {
+		c.push_back(random);
+	} else {
+		int tmp = c[shiftIndex];
+		c[shiftIndex] = random;
+
+		for (size_t i = shiftIndex+1; i < c.size()-1; i++) {
+			c[i] = tmp;
+			tmp = c[i + 1];
+		}
+		c.push_back(tmp);
+	}
+}
+
+
+// Insert new value into sorted vector.
+inline void shiftInsertSwap(std::vector<int>& c, int random) {
+	size_t shiftIndex = getSortedPosition(c, random);
+
+	// Insert new value at index and shift old values to keep sorted order.
+
+	if (shiftIndex == c.size()) {
+		c.push_back(random);
+	} else {
+		int tmp = c[shiftIndex];
+		c[shiftIndex] = random;
+
+		for (size_t i = shiftIndex+1; i < c.size()-1; i++) {
+			std::swap(tmp, c[i]);
+			c[i] = tmp;
+			tmp = c[i + 1];
+		}
+		c.push_back(tmp);
+	}
+}
+
 // Benchmark the time it takes to insert 'size' number of values 
 // while preserving the sorted order of the vector at all times.
 double benchmarkVector(std::vector<int>& c, const size_t size) {
@@ -81,7 +124,7 @@ double benchmarkVector(std::vector<int>& c, const size_t size) {
 
 	std::function<void()> myfunc = [&c,size,random_feed]() {
 		for (size_t i = 0; i < size; i++) {
-			shiftInsert(c, random_feed[i]);
+			shiftInsertSwap(c, random_feed[i]);
 		}
 	};
 
