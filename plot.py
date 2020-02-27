@@ -16,7 +16,12 @@ def getValues(*args):
                 values.append(float(row[0]))
         return values
 
-    return (readFile(arg) for arg in args)
+    total = [readFile(arg) for arg in args]
+
+    # Unify unpacking usage of returned values.
+    # a = getValues('single') // a is a list.
+    # a, b = getValues('a', 'b') // a and b are lists.
+    return total if len(total) > 1 else total[0]
 
 # Assumes len(numerators) == len(denominators).
 # Numerator / Denominators.
@@ -34,22 +39,9 @@ def printFactor(ax, x_axis, bases, lists):
 
 # Load values.
 list10, list30, list100 = getValues('list10', 'list30', 'list100')
-
-copy10 = getValues('copy10')
-copy30 = getValues('copy30')
-copy100 = getValues('copy100')
-
-swap10 = getValues('swap10')
-swap30 = getValues('swap30')
-swap100 = getValues('swap100')
-
-insert10 = getValues('insert10')
-insert30 = getValues('insert30')
-insert100 = getValues('insert100')
-
-print(insert10)
-print(insert10[0])
-print(insert10[0][0])
+copy10, copy30, copy100 = getValues('copy10', 'copy30', 'copy100')
+swap10, swap30, swap100 = getValues('swap10', 'swap30', 'swap100')
+insert10, insert30, insert100 = getValues('insert10', 'insert30', 'insert100')
 
 # Create figure.
 fig = plt.figure()
