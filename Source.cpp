@@ -124,7 +124,7 @@ double benchmarkVector(std::vector<int>& c, const size_t size) {
 
 	std::function<void()> myfunc = [&c,size,random_feed]() {
 		for (size_t i = 0; i < size; i++) {
-			shiftInsertSwap(c, random_feed[i]);
+			shiftInsert(c, random_feed[i]);
 		}
 	};
 
@@ -181,7 +181,7 @@ std::optional<ARGS> parseArgs(size_t argc, char** argv) {
 
 	ARGS args;
 	if (argc != 4) {
-		std::cout << "Not enough parameters!\nRequired parameters: min max rate\nWhere min and max refer to 2^min and 2^max." << std::endl;
+		std::cout << "Wrong number of arguments! Expected 3 got " << argc << "\nRequired parameters: min max rate\nWhere min and max refer to 2^min and 2^max." << std::endl;
 		return std::nullopt;
 	}
 
